@@ -8,12 +8,7 @@ import torch.nn.functional as F
 
 from environments.env import SchedulerEnv
 from models.a2c import Model
-
-
-gamma = 0.99
-batch_size = 11
-num_envs = 6
-reward_steps = 4
+from hyperparameters.a2c_hp import *
 
 def unpack_batch(batch, model, device='cpu'):
 

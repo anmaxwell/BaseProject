@@ -5,15 +5,10 @@ import pandas as pd
 
 class SchedulerEnv(gym.Env):
 
-    def __init__(self):
+    def __init__(self, num_gps:int = 100, num_slots:int = 32, num_pre_booked:int = 750, to_book:list = [2,1,1,1,1]):
         
-        #starting parameters
-        num_gps = 100
-        num_slots = 32
-        num_pre_booked = 750
+        
         #to_book = [2,1,2,2,1,1,1,3,3,1,2,1,3,2,1,1,2,1,3,2,3,2]
-        to_book = [2,1,1,1,1]
-        num_to_book = len(to_book)
         agent_pos = [0,0]
         
         #set parameters for the day
@@ -21,7 +16,7 @@ class SchedulerEnv(gym.Env):
         self.num_slots = num_slots
         self.num_pre_booked = num_pre_booked
         self.to_book = to_book
-        self.num_to_book = num_to_book
+        self.num_to_book = len(self.to_book)
         self.diary_slots = num_gps*num_slots
         self.agent_pos = agent_pos
 
