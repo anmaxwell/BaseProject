@@ -1,31 +1,36 @@
 import gym
 import numpy as np
 import pandas as pd
-
+import random
+from random import choices
 
 class SchedulerEnv(gym.Env):
 
-    def __init__(self, num_gps:int = 100, num_slots:int = 32, num_pre_booked:int = 750, to_book:list = [2,1,1,1,1]):
-        
-        
-        #to_book = [2,1,2,2,1,1,1,3,3,1,2,1,3,2,1,1,2,1,3,2,3,2]
+    def __init__(self, num_gps:int = 100, num_slots:int = 40):
+
+        num_pre_booked = random.randint(6, 14)
+        num_to_book = random.randint(6, 12)
+        to_book = []
+        for i in range(num_gps):
+            for j in range(num_to_book):
+                to_book.append(*choices([1,2,3],[.7, .29, .1]))
         agent_pos = [0,0]
-        
+
         #set parameters for the day
         self.num_gps = num_gps
         self.num_slots = num_slots
         self.num_pre_booked = num_pre_booked
         self.to_book = to_book
-        self.num_to_book = len(self.to_book)
+        self.num_to_book = num_to_book
         self.diary_slots = num_gps*num_slots
         self.agent_pos = agent_pos
 
         #set action space to move around the grid
         self.action_space = gym.spaces.Discrete(4) #up, down, left, right
-        
+
         #set observation space 
         self.observation_space = gym.spaces.Box(low=0, high=1, shape=(self.num_slots, self.num_gps), dtype=np.int32)
-   
+
     #creates daily diary for each gp, randomly populates prebooked appointments and resets parameters
     def reset(self):
 
@@ -45,11 +50,11 @@ class SchedulerEnv(gym.Env):
         self.done = False
         self.reward = 0
         self.appt_idx = 0
-        
+
         #print('starting state', self.state.sum(), self.state)
 
         return self.state
-    
+
     #calculates new position of the agent based on the action
     def move_agent(self, action):
 
@@ -83,24 +88,24 @@ class SchedulerEnv(gym.Env):
     #checks if we can look to book appointment starting here
     def check_bookable(self):
         return self.state[self.agent_pos[0], self.agent_pos[1]] == 0.0
-    
+
     #action if we can't book the appointment
     def invalid_booking(self):
         #print('cant book')
         self.reward = -1
-        
+
     #action if we can book the appointment
     def valid_booking(self):
         #print('go ahead and book')
         self.appt_idx += 1
         self.reward = 1
-    
+
     #checks if the appointment fits
     def check_and_book(self):
-        
+
         max_row = self.num_slots - 1
         cells_to_check = self.to_book[self.appt_idx]
-        
+
         if cells_to_check==1:
             #print('good to check for single')
             if self.state[self.agent_pos[0], self.agent_pos[1]] == 0:
@@ -128,7 +133,7 @@ class SchedulerEnv(gym.Env):
             else:
                 #print('not for double')
                 self.invalid_booking()
-                
+
         if cells_to_check==3:
             #check we're not at the bottom of the grid
             if self.agent_pos[0]+1<max_row:
@@ -147,7 +152,7 @@ class SchedulerEnv(gym.Env):
             else:
                 #print('not for treble')
                 self.invalid_booking()
-                
+
         if cells_to_check==4:
             #check we're not at the bottom of the grid
             if self.agent_pos[0]+2<max_row:
@@ -187,9 +192,9 @@ class SchedulerEnv(gym.Env):
         else:
             self.agent_pos = new_agent_pos
             #print('here2', self.agent_pos)
-            
+
         #print('trying to book', self.to_book, self.appt_idx)
-        
+
         #check if it's possible to book then book
         if self.check_bookable():
             #print('checked here')
@@ -197,11 +202,11 @@ class SchedulerEnv(gym.Env):
         else:
             #print('not bookable')
             self.invalid_booking()
-        
+
         #work out if episode complete
         if self.appt_idx == len(self.to_book):
             self.done = True
-            
+
         #print(self.state, self.agent_pos)
         agent_state = self.state.copy()
         agent_state[self.agent_pos[0], self.agent_pos[1]] = 5
