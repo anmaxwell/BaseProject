@@ -8,12 +8,11 @@ class SchedulerEnv(gym.Env):
 
     def __init__(self, num_gps:int = 100, num_slots:int = 40):
 
-        num_pre_booked = random.randint(6, 14)
-        num_to_book = random.randint(6, 12)
+        num_pre_booked = random.randint(6*num_gps, 14*num_gps)
+        num_to_book = random.randint(6*num_gps, 12*num_gps)
         to_book = []
-        for i in range(num_gps):
-            for j in range(num_to_book):
-                to_book.append(*choices([1,2,3],[.7, .29, .1]))
+        for j in range(num_to_book):
+            to_book.append(*choices([1,2,3],[.7, .29, .1]))
         agent_pos = [0,0]
 
         #set parameters for the day
